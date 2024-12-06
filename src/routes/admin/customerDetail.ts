@@ -88,74 +88,6 @@ router.post("/addCustomer", async (req, res) => {
   }
 });
 
-// register new customer
-router.post("/addCust_", async (req, res) => {
-  try {
-    const {
-      // start personal detail data
-      name,
-      age,
-      gender,
-      photo,
-      mobile,
-      email,
-      address,
-      weight,
-      height,
-      // end personal detail data
-      brandId,
-      // start registration detail data
-      registrationDate,
-      startDate,
-      expiryDate,
-
-      // end registration detail data
-      // start payment detail data
-      totalAmountToPay,
-      // end payment detail data
-    } = req.body;
-    const newCustomer = new CustomerDetail({
-      name,
-      age,
-      gender,
-      photo,
-      mobile,
-      email,
-      address,
-      weight,
-      height,
-      brandId,
-    });
-    await newCustomer.save();
-    // res.status(201).json({ message: "customer registered", data: newCustomer });
-    let customerId = newCustomer?._id;
-    const registerDetail = new CustomerJoiningDetail({
-      customerId,
-      registrationDate,
-      startDate,
-      expiryDate,
-    });
-    await registerDetail.save();
-    let registerId = registerDetail?._id;
-
-    const paymentDetail = new PaymentDetail({
-      totalAmountToPay,
-      custJoinDetailId: registerId,
-      custPersonalTrainerId: "",
-      paymentFor: "registrationAmt",
-    });
-    await paymentDetail.save();
-  } catch (error) {
-    let errorData;
-    if (error instanceof Error) {
-      errorData = error.message; // Now TypeScript knows 'error' is an Error
-    } else {
-      errorData = error; // For non-error objects
-    }
-    res.status(500).json({ error: errorData });
-  }
-});
-
 router.post("/addCust", async (req, res) => {
   const session = await mongoose.startSession(); // Start a transaction session
   session.startTransaction();
@@ -203,7 +135,7 @@ router.post("/addCust", async (req, res) => {
 
     // Save registration details
     const registerDetail = new CustomerJoiningDetail({
-      customerId,
+      custDetailId: customerId,
       registrationDate,
       startDate,
       expiryDate,
@@ -239,6 +171,62 @@ router.post("/addCust", async (req, res) => {
     session.endSession();
 
     // Handle error response
+    const errorMessage =
+      error instanceof Error ? error.message : "An unknown error occurred";
+    res.status(500).json({ error: errorMessage });
+  }
+});
+
+router.post("/customerList", async (req, res) => {
+  try {
+    const { brandId } = req.body;
+    const customerList_ = await CustomerDetail.find({
+      brandId: brandId,
+      status: 1,
+    });
+
+    const customerList = await CustomerDetail.aggregate([
+      {
+        $match: {
+          brandId: brandId,
+          status: 1,
+        },
+      },
+      {
+        $addFields: {
+          userIdString: { $toString: "$_id" }, // Convert ObjectId to string
+        },
+      },
+      {
+        $lookup: {
+          from: "customerjoiningdetails",
+          localField: "userIdString",
+          foreignField: "custDetailId",
+          as: "joiningDetail",
+        },
+      },
+      {
+        $unwind: "$joiningDetail",
+      },
+      {
+        $addFields: {
+          startDate: "$joiningDetail.startDate",
+          endDate: "$joiningDetail.expiryDate",
+        },
+      },
+      {
+        $project: {
+          name: 1,
+          age: 1,
+          gender: 1,
+          // "joiningDetail.startDate": 1,
+          startDate: 1,
+          endDate: 1,
+        },
+      },
+    ]);
+    res.status(200).json({ message: "Customer List", data: customerList });
+  } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "An unknown error occurred";
     res.status(500).json({ error: errorMessage });
