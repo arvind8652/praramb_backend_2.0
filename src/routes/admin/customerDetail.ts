@@ -210,8 +210,20 @@ router.post("/customerList", async (req, res) => {
       },
       {
         $addFields: {
-          startDate: "$joiningDetail.startDate",
-          endDate: "$joiningDetail.expiryDate",
+          // startDate: "$joiningDetail.startDate",
+          // endDate: "$joiningDetail.expiryDate",
+          startDate: {
+            $dateToString: {
+              format: "%d-%m-%Y",
+              date: "$joiningDetail.startDate",
+            },
+          },
+          endDate: {
+            $dateToString: {
+              format: "%d-%m-%Y",
+              date: "$joiningDetail.expiryDate",
+            },
+          },
         },
       },
       {
