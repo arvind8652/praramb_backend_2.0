@@ -36,4 +36,19 @@ router.post("/paymentDetail", async (req, res) => {
   }
 });
 
+//paymentlist
+router.post("/paymentList", async (req, res) => {
+  try {
+    const { brandId } = req.body;
+    const paymentList = await PaymentDetail.find({
+      brandId: brandId,
+      status: 1,
+    });
+    res.status(200).json({ message: "Payment List", data: paymentList });
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "An unknown error occurred";
+    res.status(500).json({ error: errorMessage });
+  }
+});
 export default router;

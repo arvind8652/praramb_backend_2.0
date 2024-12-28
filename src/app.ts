@@ -2,6 +2,7 @@ import express, { Application } from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import customerDetail from "./routes/admin/customerDetail";
+import paymentDetail from "./routes/admin/paymentDetail";
 import staffDetail from "./routes/admin/staffDetail";
 import login from "./routes/admin/login";
 import cors from "cors";
@@ -41,6 +42,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/customer", customerDetail);
+app.use("/payment", paymentDetail);
 app.use("/staff", staffDetail);
 app.use("/login", login);
 app.listen(port, () => {

@@ -6,6 +6,7 @@ const CustomerJoiningDetailSchema: Schema = new Schema({
   registrationDate: { type: Date, default: Date.now() },
   startDate: { type: Date, default: Date.now() },
   expiryDate: { type: Date },
+  brandId: { type: String, require: true },
   status: { type: Number, default: 1 },
   createdAt: { type: Date, default: Date.now() },
   updatedAt: { type: Date, default: Date.now() },

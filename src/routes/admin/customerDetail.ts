@@ -139,6 +139,7 @@ router.post("/addCust", async (req, res) => {
       registrationDate,
       startDate,
       expiryDate,
+      brandId,
     });
     await registerDetail.save({ session });
     const registerId = registerDetail._id;
@@ -149,6 +150,7 @@ router.post("/addCust", async (req, res) => {
       custJoinDetailId: registerId,
       custPersonalTrainerId: "",
       paymentFor: "registrationAmt",
+      brandId,
     });
     await paymentDetail.save({ session });
 
