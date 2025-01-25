@@ -11,7 +11,11 @@ const CustomerDetailSchema: Schema = new Schema({
   address: { type: String, require: true },
   weight: { type: Number, require: true },
   height: { type: Number, require: true },
-  brandId: { type: String, require: true },
+  // brandId: { type: String, require: true },
+  brandId: {
+    type: Schema.Types.ObjectId,
+    ref: "brandId",
+  },
   status: { type: Number, default: 1 },
   createdAt: { type: Date, default: Date.now() },
   updatedAt: { type: Date, default: Date.now() },

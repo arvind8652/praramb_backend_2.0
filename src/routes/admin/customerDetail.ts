@@ -148,7 +148,7 @@ router.post("/addCust", async (req, res) => {
     const paymentDetail = new PaymentDetail({
       totalAmountToPay,
       custJoinDetailId: registerId,
-      custPersonalTrainerId: "",
+      custPersonalTrainerId: null,
       paymentFor: "registrationAmt",
       brandId,
     });

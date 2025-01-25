@@ -51,23 +51,24 @@ router.post("/paymentList", async (req, res) => {
     const paymentList = await PaymentDetail.find({
       brandId: brandId,
       status: 1,
-    });
-    // .populate({
-    //   path: "custJoinDetailId", // Populate data from CollectionB
-    //   populate: {
-    //     path: "custDetailId", // Populate data from CollectionA through CollectionB
-    //     model: "customerdetails",
-    //   },
-    //   model: "CustomerJoiningDetails",
-    // })
-    // .exec()
-    // .then((data) => {
-    //   // return data;
-    //   console.log(JSON.stringify(data, null, 2));
-    // })
-    // .catch((error) => {
-    //   console.error(error);
-    // });
+    })
+      .populate({
+        path: "custJoinDetailId",
+        populate: {
+          path: "custDetailId",
+          model: "CustomerDetail",
+          select: { name: 1, mobile: 1, email: 1 },
+        },
+        select: { registrationDate: 1, startDate: 1, expiryDate: 1 },
+      })
+      .exec()
+      .then((data) => {
+        return data;
+        console.log(JSON.stringify(data, null, 2));
+      })
+      .catch((error) => {
+        console.error(error);
+      });
     res.status(200).json({ message: "Payment List", data: paymentList });
   } catch (error) {
     const errorMessage =
