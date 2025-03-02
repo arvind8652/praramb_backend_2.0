@@ -182,27 +182,17 @@ router.post("/addCust", async (req, res) => {
 router.post("/customerList", async (req, res) => {
   try {
     const { brandId } = req.body;
-    const customerList_ = await CustomerDetail.find({
-      brandId: brandId,
-      status: 1,
-    });
-
     const customerList = await CustomerDetail.aggregate([
       {
         $match: {
-          brandId: brandId,
+          brandId: new mongoose.Types.ObjectId(brandId),
           status: 1,
-        },
-      },
-      {
-        $addFields: {
-          userIdString: { $toString: "$_id" }, // Convert ObjectId to string
         },
       },
       {
         $lookup: {
           from: "customerjoiningdetails",
-          localField: "userIdString",
+          localField: "_id",
           foreignField: "custDetailId",
           as: "joiningDetail",
         },
@@ -240,6 +230,58 @@ router.post("/customerList", async (req, res) => {
       },
     ]);
     res.status(200).json({ message: "Customer List", data: customerList });
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "An unknown error occurred";
+    res.status(500).json({ error: errorMessage });
+  }
+});
+
+router.post("/customerDetail", async (req, res) => {
+  try {
+    const { customerId } = req.body;
+    const customerDetailData = await CustomerDetail.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(customerId),
+        },
+      },
+      {
+        $lookup: {
+          from: "customerjoiningdetails",
+          localField: "_id",
+          foreignField: "custDetailId",
+          as: "joiningDetail",
+        },
+      },
+      {
+        $unwind: "$joiningDetail",
+      },
+      {
+        $lookup: {
+          from: "paymentdetails",
+          localField: "joiningDetail._id",
+          foreignField: "custJoinDetailId",
+          as: "paymentDetail",
+        },
+      },
+      {
+        $unwind: "$paymentDetail",
+      },
+      // {
+      //   $project: {
+      //     name: 1,
+      //     age: 1,
+      //   },
+      // },
+    ]);
+    res.status(200).json({
+      message: "Customer Detail",
+      data:
+        customerDetailData && customerDetailData?.length > 0
+          ? customerDetailData[0]
+          : null,
+    });
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "An unknown error occurred";

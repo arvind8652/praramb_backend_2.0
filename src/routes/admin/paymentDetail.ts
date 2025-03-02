@@ -57,18 +57,19 @@ router.post("/paymentList", async (req, res) => {
         populate: {
           path: "custDetailId",
           model: "CustomerDetail",
-          select: { name: 1, mobile: 1, email: 1 },
+          select: { name: 1, mobile: 1, email: 1, gender: 1 },
         },
         select: { registrationDate: 1, startDate: 1, expiryDate: 1 },
       })
       .exec()
       .then((data) => {
+        // console.log(JSON.stringify(data, null, 2));
         return data;
-        console.log(JSON.stringify(data, null, 2));
       })
       .catch((error) => {
         console.error(error);
       });
+
     res.status(200).json({ message: "Payment List", data: paymentList });
   } catch (error) {
     const errorMessage =
