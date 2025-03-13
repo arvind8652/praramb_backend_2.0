@@ -2,7 +2,10 @@ import mongoose, { Schema, Document } from "mongoose";
 import { IPayedAmountDetail } from "../../interfaces";
 
 const PayedAmountDetailSchema: Schema = new Schema({
-  payedAmountDetailId: { type: String, require: true },
+  PaymentDetailId: {
+    type: Schema.Types.ObjectId,
+    ref: "PaymentDetail",
+  },
   amount: { type: Number, require: true },
   paymentDate: { type: Date, default: Date.now() },
   transactionId: { type: String, require: true },

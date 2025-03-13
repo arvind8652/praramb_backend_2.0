@@ -4,9 +4,9 @@ import { ICustomerJoiningDetail } from "../../interfaces";
 const CustomerJoiningDetailSchema: Schema = new Schema({
   // custDetailId: { type: String, require: true },
   custDetailId: { type: Schema.Types.ObjectId, ref: "CustomerDetail" },
-  registrationDate: { type: Date, default: Date.now() },
-  startDate: { type: Date, default: Date.now() },
-  expiryDate: { type: Date },
+  registrationDate: { type: String, require: true },
+  startDate: { type: String, require: true },
+  expiryDate: { type: String, require: true },
   // brandId: { type: String, require: true },
   brandId: { type: Schema.Types.ObjectId, ref: "BrandDetail" },
   status: { type: Number, default: 1 },

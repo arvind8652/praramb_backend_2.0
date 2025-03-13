@@ -179,6 +179,111 @@ router.post("/addCust", async (req, res) => {
   }
 });
 
+router.put("/updateCust/:id", async (req, res) => {
+  const session = await mongoose.startSession(); // Start a transaction session
+  session.startTransaction();
+  try {
+    const customerId = req.params.id;
+    const {
+      // start personal detail data
+      name,
+      age,
+      gender,
+      photo,
+      mobile,
+      email,
+      address,
+      weight,
+      height,
+      // end personal detail data
+      brandId,
+      // start registration detail data
+      registrationDate,
+      startDate,
+      expiryDate,
+      // end registration detail data
+      // start payment detail data
+      totalAmountToPay,
+      // end payment detail data
+    } = req.body;
+
+    // Find and update customer details
+    const updatedCustomer = await CustomerDetail.findByIdAndUpdate(
+      customerId,
+      {
+        name,
+        age,
+        gender,
+        photo,
+        mobile,
+        email,
+        address,
+        weight,
+        height,
+        brandId,
+      },
+      { new: true, session }
+    );
+
+    if (!updatedCustomer) {
+      throw new Error("Customer not found");
+    }
+
+    // Find and update registration details
+    const updatedRegistration = await CustomerJoiningDetail.findOneAndUpdate(
+      { custDetailId: customerId },
+      {
+        registrationDate,
+        startDate,
+        expiryDate,
+        brandId,
+      },
+      { new: true, session }
+    );
+
+    if (!updatedRegistration) {
+      throw new Error("Registration details not found");
+    }
+
+    // Find and update payment details
+    const updatedPayment = await PaymentDetail.findOneAndUpdate(
+      { custJoinDetailId: updatedRegistration._id },
+      {
+        totalAmountToPay,
+        brandId,
+      },
+      { new: true, session }
+    );
+
+    if (!updatedPayment) {
+      throw new Error("Payment details not found");
+    }
+
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    // Send a success response
+    res.status(200).json({
+      message: "Customer details updated successfully",
+      data: {
+        customer: updatedCustomer,
+        registration: updatedRegistration,
+        payment: updatedPayment,
+      },
+    });
+  } catch (error) {
+    // Rollback the transaction in case of an error
+    await session.abortTransaction();
+    session.endSession();
+
+    // Handle error response
+    const errorMessage =
+      error instanceof Error ? error.message : "An unknown error occurred";
+    res.status(500).json({ error: errorMessage });
+  }
+});
+
 router.post("/customerList", async (req, res) => {
   try {
     const { brandId } = req.body;
@@ -202,20 +307,20 @@ router.post("/customerList", async (req, res) => {
       },
       {
         $addFields: {
-          // startDate: "$joiningDetail.startDate",
-          // endDate: "$joiningDetail.expiryDate",
-          startDate: {
-            $dateToString: {
-              format: "%d-%m-%Y",
-              date: "$joiningDetail.startDate",
-            },
-          },
-          endDate: {
-            $dateToString: {
-              format: "%d-%m-%Y",
-              date: "$joiningDetail.expiryDate",
-            },
-          },
+          startDate: "$joiningDetail.startDate",
+          endDate: "$joiningDetail.expiryDate",
+          // startDate: {
+          //   $dateToString: {
+          //     format: "%d-%m-%Y",
+          //     date: "$joiningDetail.startDate",
+          //   },
+          // },
+          // endDate: {
+          //   $dateToString: {
+          //     format: "%d-%m-%Y",
+          //     date: "$joiningDetail.expiryDate",
+          //   },
+          // },
         },
       },
       {
